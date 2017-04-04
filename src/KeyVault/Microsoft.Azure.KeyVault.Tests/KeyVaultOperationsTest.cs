@@ -4,22 +4,20 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Security.Cryptography;
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.Test.HttpRecorder;
-using Microsoft.Azure.KeyVault.WebKey;
-using Xunit;
-using Microsoft.Azure.KeyVault.Models;
-using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
-using Microsoft.Rest.Serialization;
-using System.Security.Cryptography.X509Certificates;
-using System.Net;
 using System.Globalization;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using KeyVault.TestFramework;
-using System.Net.Http;
+using Microsoft.Azure.KeyVault.Models;
+using Microsoft.Azure.KeyVault.WebKey;
+using Microsoft.Azure.Test.HttpRecorder;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Microsoft.Rest.Serialization;
+using Xunit;
 
 namespace Microsoft.Azure.KeyVault.Tests
 {
@@ -58,6 +56,12 @@ namespace Microsoft.Azure.KeyVault.Tests
                 _vaultAddress = HttpMockServer.Variables["VaultAddress"];
                 _keyName = HttpMockServer.Variables["KeyName"];
                 _keyVersion = HttpMockServer.Variables["KeyVersion"];
+
+                string softDeleteSetting = String.Empty;
+                if ( HttpMockServer.Variables.TryGetValue( "SoftDeleteEnabled", out softDeleteSetting ) )
+                {
+                    Boolean.TryParse( softDeleteSetting, out _softDeleteEnabled );
+                }
             }
         }
 
@@ -474,14 +478,14 @@ namespace Microsoft.Azure.KeyVault.Tests
         }
 
         [Fact]
-        public void KeyVaultBackupRestoreTest()
+        public void KeyVaultKeyBackupRestoreTest()
         {
             using (MockContext context = MockContext.Start(this.GetType().FullName))
             {
 
                 var client = GetKeyVaultClient();
 
-                var keyName = "BackupRestoreTest";
+                var keyName = "KeyBackupRestoreTest";
 
                 var attribute = new KeyAttributes()
                 {
@@ -527,6 +531,64 @@ namespace Microsoft.Azure.KeyVault.Tests
                         this.fixture.WaitOnDeletedKey(client, _vaultAddress, keyName);
 
                         client.PurgeDeletedKeyAsync(_vaultAddress, keyName).Wait();
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void KeyVaultSecretBackupRestoreTest( )
+        {
+            using ( MockContext context = MockContext.Start( this.GetType( ).FullName ) )
+            {
+
+                var client = GetKeyVaultClient();
+
+                var name = "SecretBackupRestoreTest";
+
+                var attributes = new SecretAttributes()
+                {
+                    Enabled = true,
+                    Expires = new DateTime(2030, 1, 1).ToUniversalTime(),
+                    NotBefore = new DateTime(2010, 1, 1).ToUniversalTime()
+                };
+
+                var created = client.SetSecretAsync(_vaultAddress, name, "if found please return to secretbackuprestoretest", tags: null, contentType: "text", secretAttributes: attributes )
+                    .GetAwaiter()
+                    .GetResult();
+
+                try
+                {
+                    // Backup the secret 
+                    var backupResponse = client.BackupSecretAsync(_vaultAddress, name).GetAwaiter().GetResult();
+
+                    client.DeleteSecretAsync( _vaultAddress, name ).Wait( );
+
+                    if ( _softDeleteEnabled )
+                    {
+                        this.fixture.WaitOnDeletedSecret( client, _vaultAddress, name );
+
+                        client.PurgeDeletedSecretAsync( _vaultAddress, name ).Wait( );
+                    }
+
+                    // Restore the backedup secret
+                    var restoredDeletedSecret =
+                        this.fixture.retryExecutor.ExecuteAction(() => client.RestoreSecretAsync(_vaultAddress, backupResponse.Value).GetAwaiter().GetResult());
+
+                    VerifySecretAttributesAreEqual( restoredDeletedSecret.Attributes, created.Attributes );
+                    Assert.Equal( created.Id, restoredDeletedSecret.Id );
+                }
+                finally
+                {
+                    this.fixture.WaitOnSecret( client, _vaultAddress, name );
+
+                    client.DeleteSecretAsync( _vaultAddress, name ).Wait( );
+
+                    if ( _softDeleteEnabled )
+                    {
+                        this.fixture.WaitOnDeletedSecret( client, _vaultAddress, name );
+
+                        client.PurgeDeletedSecretAsync( _vaultAddress, name ).Wait( );
                     }
                 }
             }
@@ -642,11 +704,12 @@ namespace Microsoft.Azure.KeyVault.Tests
         [Fact]
         public void KeyVaultGetDeletedKeyTest()
         {
-            if (!_softDeleteEnabled) return;
-
             using (MockContext context = MockContext.Start(this.GetType().FullName))
             {
                 var client = GetKeyVaultClient();
+
+                // settings may not be loaded until the client is fully initialized
+                if ( !_softDeleteEnabled ) return;
 
                 var keyName = "GetDeletedKeyTest";
                 var attributes = new KeyAttributes();
@@ -677,12 +740,13 @@ namespace Microsoft.Azure.KeyVault.Tests
         [Fact]
         public void KeyVaultKeyCreateDeleteRecoverPurgeTest()
         {
-            if (!_softDeleteEnabled) return;
-
             using (MockContext context = MockContext.Start(this.GetType().FullName))
             {
 
                 var client = GetKeyVaultClient();
+
+                // settings may not be loaded until the client is fully initialized
+                if ( !_softDeleteEnabled ) return;
 
                 var keyName = "CreateDeleteRecoverPurgeTest";
                 var attributes = new KeyAttributes();
@@ -766,11 +830,13 @@ namespace Microsoft.Azure.KeyVault.Tests
         [Fact]
         public void KeyVaultListDeletedKeysTest()
         {
-            if (!_softDeleteEnabled) return;
-
             using (MockContext context = MockContext.Start(this.GetType().FullName))
             {
                 var client = GetKeyVaultClient();
+
+                // settings may not be loaded until the client is fully initialized
+                if ( !_softDeleteEnabled ) return;
+
                 string keyNamePrefix = "listdeletedkeytest";
                 int numKeys = 3;
                 int maxResults = 1;
@@ -1129,11 +1195,12 @@ namespace Microsoft.Azure.KeyVault.Tests
         [Fact]
         public void KeyVaultGetDeletedSecretTest()
         {
-            if (!_softDeleteEnabled) return;
-
             using (MockContext context = MockContext.Start(this.GetType().FullName))
             {
                 var client = GetKeyVaultClient();
+
+                // settings may not be loaded until the client is fully initialized
+                if ( !_softDeleteEnabled ) return;
 
                 var secretName = "GetDeletedSecretTest";
                 var secretValue = "mysecretvalue";
@@ -1162,12 +1229,12 @@ namespace Microsoft.Azure.KeyVault.Tests
         [Fact]
         public void KeyVaultSecretCreateDeleteRecoverPurgeTest()
         {
-            if (!_softDeleteEnabled) return;
-
             using (MockContext context = MockContext.Start(this.GetType().FullName))
             {
-
                 var client = GetKeyVaultClient();
+
+                // settings may not be loaded until the client is fully initialized
+                if ( !_softDeleteEnabled ) return;
 
                 string secretName = "SecretCreateDeleteRecoverPurgeTest";
                 string originalSecretValue = "mysecretvalue";
@@ -1254,11 +1321,12 @@ namespace Microsoft.Azure.KeyVault.Tests
         [Fact]
         public void KeyVaultListDeletedSecretsTest()
         {
-            if (!_softDeleteEnabled) return;
-
             using (MockContext context = MockContext.Start(this.GetType().FullName))
             {
                 var client = GetKeyVaultClient();
+
+                // settings may not be loaded until the client is fully initialized
+                if ( !_softDeleteEnabled ) return;
 
                 int numSecrets = 3;
                 int maxResults = 1;
@@ -2838,6 +2906,13 @@ namespace Microsoft.Azure.KeyVault.Tests
             Assert.Equal(keyAttribute1.Expires, keyAttribute2.Expires);
             Assert.Equal(keyAttribute1.NotBefore, keyAttribute2.NotBefore);
             Assert.Equal<bool?>(keyAttribute1.Enabled ?? true, keyAttribute2.Enabled ?? true);
+        }
+
+        private void VerifySecretAttributesAreEqual( SecretAttributes leftAttributes, SecretAttributes rightAttributes )
+        {
+            Assert.Equal( leftAttributes.Expires, rightAttributes.Expires );
+            Assert.Equal( leftAttributes.NotBefore, rightAttributes.NotBefore );
+            Assert.Equal<bool?>( leftAttributes.Enabled ?? true, rightAttributes.Enabled ?? true );
         }
 
         private void VerifyKeyOperationsAreEqual(IList<string> firstOperations, IList<string> secondOperations)

@@ -46,12 +46,12 @@ namespace Microsoft.Azure.KeyVault.Models
         {
             get
             {
-                if(Body != null && Body.Error != null && !string.IsNullOrWhiteSpace(Body.Error.Message))
+                if ( Body != null && Body.Error != null && !string.IsNullOrWhiteSpace( Body.Error.Message ) )
                     return Body.Error.Message;
                 return base.Message;
             }
         }
-
+        
         /// <summary>
         /// Initializes a new instance of the KeyVaultErrorException class.
         /// </summary>
