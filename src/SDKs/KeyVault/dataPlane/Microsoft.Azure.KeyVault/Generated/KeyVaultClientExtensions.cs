@@ -1189,6 +1189,8 @@ namespace Microsoft.Azure.KeyVault
             /// Sets the specified certificate issuer.
             /// </summary>
             /// <remarks>
+            /// The SetCertificateIssuer operation adds or updates the specified
+            /// certificate issuer.
             /// </remarks>
             /// <param name='operations'>
             /// The operations group for this extension method.
@@ -1226,6 +1228,8 @@ namespace Microsoft.Azure.KeyVault
             /// Updates the specified certificate issuer.
             /// </summary>
             /// <remarks>
+            /// The UpdateCertificateIssuer operation performs an update on the specified
+            /// certificate issuer entity.
             /// </remarks>
             /// <param name='operations'>
             /// The operations group for this extension method.
@@ -1290,6 +1294,8 @@ namespace Microsoft.Azure.KeyVault
             /// Deletes the specified certificate issuer.
             /// </summary>
             /// <remarks>
+            /// The DeleteCertificateIssuer operation permanently removes the specified
+            /// certificate issuer from the vault.
             /// </remarks>
             /// <param name='operations'>
             /// The operations group for this extension method.
@@ -1483,6 +1489,9 @@ namespace Microsoft.Azure.KeyVault
             /// Updates the specified attributes associated with the given certificate.
             /// </summary>
             /// <remarks>
+            /// The UpdateCertificate operation applies the specified update on the given
+            /// certificate; note the only elements being updated are the certificate's
+            /// attributes.
             /// </remarks>
             /// <param name='operations'>
             /// The operations group for this extension method.
@@ -1660,6 +1669,11 @@ namespace Microsoft.Azure.KeyVault
             /// Lists the deleted certificates in the specified vault, currently available
             /// for recovery.
             /// </summary>
+            /// <remarks>
+            /// The GetDeletedCertificates operation retrieves the certificates in the
+            /// current vault which are in a deleted state and ready for recovery or
+            /// purging.
+            /// </remarks>
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
@@ -1760,6 +1774,333 @@ namespace Microsoft.Azure.KeyVault
             public static async Task<CertificateBundle> RecoverDeletedCertificateAsync(this IKeyVaultClient operations, string vaultBaseUrl, string certificateName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.RecoverDeletedCertificateWithHttpMessagesAsync(vaultBaseUrl, certificateName, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// List storage accounts managed by specified key vault
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='vaultBaseUrl'>
+            /// The vault name, for example https://myvault.vault.azure.net.
+            /// </param>
+            /// <param name='maxresults'>
+            /// Maximum number of results to return in a page. If not specified the service
+            /// will return up to 25 results.
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<IPage<StorageAccountItem>> GetStorageAccountsAsync(this IKeyVaultClient operations, string vaultBaseUrl, int? maxresults = default(int?), CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.GetStorageAccountsWithHttpMessagesAsync(vaultBaseUrl, maxresults, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// Deletes a storage account.
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='vaultBaseUrl'>
+            /// The vault name, for example https://myvault.vault.azure.net.
+            /// </param>
+            /// <param name='storageAccountName'>
+            /// The name of the storage account.
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<StorageBundle> DeleteStorageAccountAsync(this IKeyVaultClient operations, string vaultBaseUrl, string storageAccountName, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.DeleteStorageAccountWithHttpMessagesAsync(vaultBaseUrl, storageAccountName, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// Gets information about a specified storage account.
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='vaultBaseUrl'>
+            /// The vault name, for example https://myvault.vault.azure.net.
+            /// </param>
+            /// <param name='storageAccountName'>
+            /// The name of the storage account.
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<StorageBundle> GetStorageAccountAsync(this IKeyVaultClient operations, string vaultBaseUrl, string storageAccountName, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.GetStorageAccountWithHttpMessagesAsync(vaultBaseUrl, storageAccountName, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// Creates or updates a new storage account.
+            /// </summary>
+            /// <remarks>
+            /// The full key identifier, attributes, and tags are provided in the response.
+            /// </remarks>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='vaultBaseUrl'>
+            /// The vault name, for example https://myvault.vault.azure.net.
+            /// </param>
+            /// <param name='storageAccountName'>
+            /// The name of the storage account.
+            /// </param>
+            /// <param name='resourceId'>
+            /// Storage account resource id.
+            /// </param>
+            /// <param name='activeKeyName'>
+            /// Current active storage account key name.
+            /// </param>
+            /// <param name='autoRegenerateKey'>
+            /// whether keyvault should manage the storage account for the user.
+            /// </param>
+            /// <param name='regenerationPeriod'>
+            /// The key regeneration time duration specified in ISO-8601 format.
+            /// </param>
+            /// <param name='storageAccountAttributes'>
+            /// The attributes of the storage account.
+            /// </param>
+            /// <param name='tags'>
+            /// Application specific metadata in the form of key-value pairs.
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<StorageBundle> SetStorageAccountAsync(this IKeyVaultClient operations, string vaultBaseUrl, string storageAccountName, string resourceId, string activeKeyName, bool autoRegenerateKey, string regenerationPeriod = default(string), StorageAccountAttributes storageAccountAttributes = default(StorageAccountAttributes), IDictionary<string, string> tags = default(IDictionary<string, string>), CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.SetStorageAccountWithHttpMessagesAsync(vaultBaseUrl, storageAccountName, resourceId, activeKeyName, autoRegenerateKey, regenerationPeriod, storageAccountAttributes, tags, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// Updates the specified attributes associated with the given storage account.
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='vaultBaseUrl'>
+            /// The vault name, for example https://myvault.vault.azure.net.
+            /// </param>
+            /// <param name='storageAccountName'>
+            /// The name of the storage account.
+            /// </param>
+            /// <param name='activeKeyName'>
+            /// The current active storage account key name.
+            /// </param>
+            /// <param name='autoRegenerateKey'>
+            /// whether keyvault should manage the storage account for the user.
+            /// </param>
+            /// <param name='regenerationPeriod'>
+            /// The key regeneration time duration specified in ISO-8601 format.
+            /// </param>
+            /// <param name='storageAccountAttributes'>
+            /// The attributes of the storage account.
+            /// </param>
+            /// <param name='tags'>
+            /// Application specific metadata in the form of key-value pairs.
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<StorageBundle> UpdateStorageAccountAsync(this IKeyVaultClient operations, string vaultBaseUrl, string storageAccountName, string activeKeyName = default(string), bool? autoRegenerateKey = default(bool?), string regenerationPeriod = default(string), StorageAccountAttributes storageAccountAttributes = default(StorageAccountAttributes), IDictionary<string, string> tags = default(IDictionary<string, string>), CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.UpdateStorageAccountWithHttpMessagesAsync(vaultBaseUrl, storageAccountName, activeKeyName, autoRegenerateKey, regenerationPeriod, storageAccountAttributes, tags, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// Regenerates the specified key value for the given storage account.
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='vaultBaseUrl'>
+            /// The vault name, for example https://myvault.vault.azure.net.
+            /// </param>
+            /// <param name='storageAccountName'>
+            /// The name of the storage account.
+            /// </param>
+            /// <param name='keyName'>
+            /// The storage account key name.
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<StorageBundle> RegenerateStorageAccountKeyAsync(this IKeyVaultClient operations, string vaultBaseUrl, string storageAccountName, string keyName, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.RegenerateStorageAccountKeyWithHttpMessagesAsync(vaultBaseUrl, storageAccountName, keyName, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// List storage SAS definitions for the given storage account.
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='vaultBaseUrl'>
+            /// The vault name, for example https://myvault.vault.azure.net.
+            /// </param>
+            /// <param name='storageAccountName'>
+            /// The name of the storage account.
+            /// </param>
+            /// <param name='maxresults'>
+            /// Maximum number of results to return in a page. If not specified the service
+            /// will return up to 25 results.
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<IPage<SasDefinitionItem>> GetSasDefinitionsAsync(this IKeyVaultClient operations, string vaultBaseUrl, string storageAccountName, int? maxresults = default(int?), CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.GetSasDefinitionsWithHttpMessagesAsync(vaultBaseUrl, storageAccountName, maxresults, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// Deletes a SAS definition from a specified storage account.
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='vaultBaseUrl'>
+            /// The vault name, for example https://myvault.vault.azure.net.
+            /// </param>
+            /// <param name='storageAccountName'>
+            /// The name of the storage account.
+            /// </param>
+            /// <param name='sasDefinitionName'>
+            /// The name of the SAS definition.
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<SasDefinitionBundle> DeleteSasDefinitionAsync(this IKeyVaultClient operations, string vaultBaseUrl, string storageAccountName, string sasDefinitionName, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.DeleteSasDefinitionWithHttpMessagesAsync(vaultBaseUrl, storageAccountName, sasDefinitionName, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// Gets information about a SAS definition for the specified storage account.
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='vaultBaseUrl'>
+            /// The vault name, for example https://myvault.vault.azure.net.
+            /// </param>
+            /// <param name='storageAccountName'>
+            /// The name of the storage account.
+            /// </param>
+            /// <param name='sasDefinitionName'>
+            /// The name of the SAS definition.
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<SasDefinitionBundle> GetSasDefinitionAsync(this IKeyVaultClient operations, string vaultBaseUrl, string storageAccountName, string sasDefinitionName, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.GetSasDefinitionWithHttpMessagesAsync(vaultBaseUrl, storageAccountName, sasDefinitionName, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// Creates or updates a new SAS definition for the specified storage account.
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='vaultBaseUrl'>
+            /// The vault name, for example https://myvault.vault.azure.net.
+            /// </param>
+            /// <param name='storageAccountName'>
+            /// The name of the storage account.
+            /// </param>
+            /// <param name='sasDefinitionName'>
+            /// The name of the SAS definition.
+            /// </param>
+            /// <param name='parameters'>
+            /// Sas definition creation metadata in the form of key-value pairs.
+            /// </param>
+            /// <param name='sasDefinitionAttributes'>
+            /// The attributes of the SAS definition.
+            /// </param>
+            /// <param name='tags'>
+            /// Application specific metadata in the form of key-value pairs.
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<SasDefinitionBundle> SetSasDefinitionAsync(this IKeyVaultClient operations, string vaultBaseUrl, string storageAccountName, string sasDefinitionName, IDictionary<string, string> parameters, SasDefinitionAttributes sasDefinitionAttributes = default(SasDefinitionAttributes), IDictionary<string, string> tags = default(IDictionary<string, string>), CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.SetSasDefinitionWithHttpMessagesAsync(vaultBaseUrl, storageAccountName, sasDefinitionName, parameters, sasDefinitionAttributes, tags, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// Updates the specified attributes associated with the given SAS definition.
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='vaultBaseUrl'>
+            /// The vault name, for example https://myvault.vault.azure.net.
+            /// </param>
+            /// <param name='storageAccountName'>
+            /// The name of the storage account.
+            /// </param>
+            /// <param name='sasDefinitionName'>
+            /// The name of the SAS definition.
+            /// </param>
+            /// <param name='parameters'>
+            /// Sas definition update metadata in the form of key-value pairs.
+            /// </param>
+            /// <param name='sasDefinitionAttributes'>
+            /// The attributes of the SAS definition.
+            /// </param>
+            /// <param name='tags'>
+            /// Application specific metadata in the form of key-value pairs.
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<SasDefinitionBundle> UpdateSasDefinitionAsync(this IKeyVaultClient operations, string vaultBaseUrl, string storageAccountName, string sasDefinitionName, IDictionary<string, string> parameters = default(IDictionary<string, string>), SasDefinitionAttributes sasDefinitionAttributes = default(SasDefinitionAttributes), IDictionary<string, string> tags = default(IDictionary<string, string>), CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.UpdateSasDefinitionWithHttpMessagesAsync(vaultBaseUrl, storageAccountName, sasDefinitionName, parameters, sasDefinitionAttributes, tags, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -1985,6 +2326,11 @@ namespace Microsoft.Azure.KeyVault
             /// Lists the deleted certificates in the specified vault, currently available
             /// for recovery.
             /// </summary>
+            /// <remarks>
+            /// The GetDeletedCertificates operation retrieves the certificates in the
+            /// current vault which are in a deleted state and ready for recovery or
+            /// purging.
+            /// </remarks>
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
@@ -1997,6 +2343,46 @@ namespace Microsoft.Azure.KeyVault
             public static async Task<IPage<DeletedCertificateItem>> GetDeletedCertificatesNextAsync(this IKeyVaultClient operations, string nextPageLink, CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.GetDeletedCertificatesNextWithHttpMessagesAsync(nextPageLink, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// List storage accounts managed by specified key vault
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='nextPageLink'>
+            /// The NextLink from the previous successful call to List operation.
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<IPage<StorageAccountItem>> GetStorageAccountsNextAsync(this IKeyVaultClient operations, string nextPageLink, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.GetStorageAccountsNextWithHttpMessagesAsync(nextPageLink, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// List storage SAS definitions for the given storage account.
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='nextPageLink'>
+            /// The NextLink from the previous successful call to List operation.
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<IPage<SasDefinitionItem>> GetSasDefinitionsNextAsync(this IKeyVaultClient operations, string nextPageLink, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.GetSasDefinitionsNextWithHttpMessagesAsync(nextPageLink, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

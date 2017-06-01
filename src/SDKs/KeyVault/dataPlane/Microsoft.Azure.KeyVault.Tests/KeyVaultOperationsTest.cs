@@ -34,6 +34,8 @@ namespace Microsoft.Azure.KeyVault.Tests
             _keyName = fixture.keyName;
             _keyVersion = fixture.keyVersion;
             _keyIdentifier = fixture.keyIdentifier;
+            _storageResourceUrl1 = fixture.StorageResourceUrl1;
+            _storageResourceUrl2 = fixture.StorageResourceUrl2;
         }
 
         private bool _standardVaultOnly = false;
@@ -42,6 +44,8 @@ namespace Microsoft.Azure.KeyVault.Tests
         private string _keyName = "";
         private string _keyVersion = "";
         private KeyIdentifier _keyIdentifier;
+        private string _storageResourceUrl1;
+        private string _storageResourceUrl2;
 
         private void Initialize()
         {
@@ -50,7 +54,9 @@ namespace Microsoft.Azure.KeyVault.Tests
                 HttpMockServer.Variables["VaultAddress"] = _vaultAddress;
                 HttpMockServer.Variables["KeyName"] = _keyName;
                 HttpMockServer.Variables["KeyVersion"] = _keyVersion;
-                HttpMockServer.Variables[ "SoftDeleteEnabled" ] = _softDeleteEnabled.ToString( );
+                HttpMockServer.Variables["SoftDeleteEnabled"] = _softDeleteEnabled.ToString();
+                HttpMockServer.Variables["StorageResourceUrl1"] = _storageResourceUrl1;
+                HttpMockServer.Variables["StorageResourceUrl2"] = _storageResourceUrl2;
             }
             else
             {
@@ -59,10 +65,18 @@ namespace Microsoft.Azure.KeyVault.Tests
                 _keyVersion = HttpMockServer.Variables["KeyVersion"];
 
                 string softDeleteSetting = String.Empty;
-                if ( HttpMockServer.Variables.TryGetValue( "SoftDeleteEnabled", out softDeleteSetting ) )
+                if (HttpMockServer.Variables.TryGetValue("SoftDeleteEnabled", out softDeleteSetting))
                 {
-                    Boolean.TryParse( softDeleteSetting, out _softDeleteEnabled );
+                    Boolean.TryParse(softDeleteSetting, out _softDeleteEnabled);
                 }
+
+                _storageResourceUrl1 = HttpMockServer.Variables.ContainsKey("StorageResourceUrl1")
+                    ? HttpMockServer.Variables["StorageResourceUrl1"]
+                    : string.Empty;
+
+                _storageResourceUrl2 = HttpMockServer.Variables.ContainsKey("StorageResourceUrl2")
+                    ? HttpMockServer.Variables["StorageResourceUrl2"]
+                    : string.Empty;
             }
         }
 
@@ -73,6 +87,13 @@ namespace Microsoft.Azure.KeyVault.Tests
             return fixture.CreateKeyVaultClient();
         }
 
+        private KeyVaultClient GetKeyVaultUserClient()
+        {
+            Initialize();
+            _keyIdentifier = new KeyIdentifier(_vaultAddress, _keyName, _keyVersion);
+            return fixture.CreateKeyVaultUserClient();
+        }
+
         [Fact]
         public void KeyVaultConstructor()
         {
@@ -80,11 +101,11 @@ namespace Microsoft.Azure.KeyVault.Tests
             {
                 Initialize();
                 var httpClient = HttpClientFactory.Create(fixture.GetHandlers());
-                
+
                 var kvClient = new KeyVaultClient(new TestKeyVaultCredential(fixture.GetAccessToken), httpClient);
                 Assert.Equal(httpClient, kvClient.HttpClient);
                 kvClient.GetKeysAsync(_vaultAddress).GetAwaiter().GetResult();
-            }            
+            }
         }
 
         #region Key Operations
@@ -111,13 +132,13 @@ namespace Microsoft.Azure.KeyVault.Tests
         }
 
         [Fact]
-        public void KeyVaultEncryptDecryptRsaOaep256Test( )
+        public void KeyVaultEncryptDecryptRsaOaep256Test()
         {
-            using ( MockContext context = MockContext.Start( this.GetType( ).FullName ) )
+            using (MockContext context = MockContext.Start(this.GetType().FullName))
             {
                 var client = GetKeyVaultClient();
 
-                EncryptDecrypt( client, _keyIdentifier, JsonWebKeyEncryptionAlgorithm.RSAOAEP256 );
+                EncryptDecrypt(client, _keyIdentifier, JsonWebKeyEncryptionAlgorithm.RSAOAEP256);
             }
         }
 
@@ -202,41 +223,41 @@ namespace Microsoft.Azure.KeyVault.Tests
         }
 
         [Fact]
-        public void KeyVaultSignVerifyPS256Test( )
+        public void KeyVaultSignVerifyPS256Test()
         {
-            using ( MockContext context = MockContext.Start( this.GetType( ).FullName ) )
+            using (MockContext context = MockContext.Start(this.GetType().FullName))
             {
                 var client = GetKeyVaultClient();
 
                 var digest = RandomHash(SHA256.Create(), 32);
 
-                SignVerify( client, _keyIdentifier, JsonWebKeySignatureAlgorithm.PS256, digest );
+                SignVerify(client, _keyIdentifier, JsonWebKeySignatureAlgorithm.PS256, digest);
             }
         }
 
         [Fact]
-        public void KeyVaultSignVerifyPS384Test( )
+        public void KeyVaultSignVerifyPS384Test()
         {
-            using ( MockContext context = MockContext.Start( this.GetType( ).FullName ) )
+            using (MockContext context = MockContext.Start(this.GetType().FullName))
             {
                 var client = GetKeyVaultClient();
 
                 var digest = RandomHash(SHA384.Create(), 64);
 
-                SignVerify( client, _keyIdentifier, JsonWebKeySignatureAlgorithm.PS384, digest );
+                SignVerify(client, _keyIdentifier, JsonWebKeySignatureAlgorithm.PS384, digest);
             }
         }
 
         [Fact]
-        public void KeyVaultSignVerifyPS512Test( )
+        public void KeyVaultSignVerifyPS512Test()
         {
-            using ( MockContext context = MockContext.Start( this.GetType( ).FullName ) )
+            using (MockContext context = MockContext.Start(this.GetType().FullName))
             {
                 var client = GetKeyVaultClient();
 
                 var digest = RandomHash(SHA512.Create(), 64);
 
-                SignVerify( client, _keyIdentifier, JsonWebKeySignatureAlgorithm.PS512, digest );
+                SignVerify(client, _keyIdentifier, JsonWebKeySignatureAlgorithm.PS512, digest);
             }
         }
 
@@ -267,15 +288,15 @@ namespace Microsoft.Azure.KeyVault.Tests
         }
 
         [Fact]
-        public void KeyVaultWrapUnwrapRsaOaep256Test( )
+        public void KeyVaultWrapUnwrapRsaOaep256Test()
         {
-            using ( MockContext context = MockContext.Start( this.GetType( ).FullName ) )
+            using (MockContext context = MockContext.Start(this.GetType().FullName))
             {
 
                 var client = GetKeyVaultClient();
 
                 var symmetricKeyBytes = GetSymmetricKeyBytes();
-                WrapAndUnwrap( client, _keyIdentifier, JsonWebKeyEncryptionAlgorithm.RSAOAEP256, symmetricKeyBytes );
+                WrapAndUnwrap(client, _keyIdentifier, JsonWebKeyEncryptionAlgorithm.RSAOAEP256, symmetricKeyBytes);
             }
         }
 
@@ -424,7 +445,7 @@ namespace Microsoft.Azure.KeyVault.Tests
                 {
                     client.DeleteKeyAsync(_vaultAddress, "ImportSoftKeyTest").Wait();
 
-                    if(_softDeleteEnabled)
+                    if (_softDeleteEnabled)
                     {
                         this.fixture.WaitOnDeletedKey(client, _vaultAddress, "ImportSoftKeyTest");
 
@@ -454,7 +475,7 @@ namespace Microsoft.Azure.KeyVault.Tests
                     // Update the current version
                     attributes.Enabled = true;
                     //use a constant to avoid time difference failures
-                    attributes.NotBefore = UnixTimeJsonConverter.EpochDate.AddSeconds(315561600); 
+                    attributes.NotBefore = UnixTimeJsonConverter.EpochDate.AddSeconds(315561600);
                     attributes.Expires = UnixTimeJsonConverter.EpochDate.AddSeconds(347184000);
 
                     var updatedKey =
@@ -490,7 +511,7 @@ namespace Microsoft.Azure.KeyVault.Tests
                 {
                     client.DeleteKeyAsync(_vaultAddress, keyName).Wait();
 
-                    if(_softDeleteEnabled)
+                    if (_softDeleteEnabled)
                     {
                         this.fixture.WaitOnDeletedKey(client, _vaultAddress, keyName);
 
@@ -605,7 +626,7 @@ namespace Microsoft.Azure.KeyVault.Tests
 
                     client.DeleteKeyAsync(_vaultAddress, keyName).Wait();
 
-                    if(_softDeleteEnabled)
+                    if (_softDeleteEnabled)
                     {
                         this.fixture.WaitOnDeletedKey(client, _vaultAddress, keyName);
 
@@ -618,9 +639,9 @@ namespace Microsoft.Azure.KeyVault.Tests
         }
 
         [Fact]
-        public void KeyVaultSecretBackupRestoreTest( )
+        public void KeyVaultSecretBackupRestoreTest()
         {
-            using ( MockContext context = MockContext.Start( this.GetType( ).FullName ) )
+            using (MockContext context = MockContext.Start(this.GetType().FullName))
             {
 
                 var client = GetKeyVaultClient();
@@ -634,7 +655,7 @@ namespace Microsoft.Azure.KeyVault.Tests
                     NotBefore = new DateTime(2010, 1, 1).ToUniversalTime()
                 };
 
-                var created = client.SetSecretAsync(_vaultAddress, name, "if found please return to secretbackuprestoretest", tags: null, contentType: "text", secretAttributes: attributes )
+                var created = client.SetSecretAsync(_vaultAddress, name, "if found please return to secretbackuprestoretest", tags: null, contentType: "text", secretAttributes: attributes)
                     .GetAwaiter()
                     .GetResult();
                 recoveryLevelIsConsistent &= VerifyDeletionRecoveryLevel(created.Attributes, _softDeleteEnabled);
@@ -644,13 +665,13 @@ namespace Microsoft.Azure.KeyVault.Tests
                     // Backup the secret 
                     var backupResponse = client.BackupSecretAsync(_vaultAddress, name).GetAwaiter().GetResult();
 
-                    client.DeleteSecretAsync( _vaultAddress, name ).Wait( );
+                    client.DeleteSecretAsync(_vaultAddress, name).Wait();
 
-                    if ( _softDeleteEnabled )
+                    if (_softDeleteEnabled)
                     {
-                        this.fixture.WaitOnDeletedSecret( client, _vaultAddress, name );
+                        this.fixture.WaitOnDeletedSecret(client, _vaultAddress, name);
 
-                        client.PurgeDeletedSecretAsync( _vaultAddress, name ).Wait( );
+                        client.PurgeDeletedSecretAsync(_vaultAddress, name).Wait();
                     }
 
                     // Restore the backedup secret
@@ -663,15 +684,15 @@ namespace Microsoft.Azure.KeyVault.Tests
                 }
                 finally
                 {
-                    this.fixture.WaitOnSecret( client, _vaultAddress, name );
+                    this.fixture.WaitOnSecret(client, _vaultAddress, name);
 
-                    client.DeleteSecretAsync( _vaultAddress, name ).Wait( );
+                    client.DeleteSecretAsync(_vaultAddress, name).Wait();
 
-                    if ( _softDeleteEnabled )
+                    if (_softDeleteEnabled)
                     {
-                        this.fixture.WaitOnDeletedSecret( client, _vaultAddress, name );
+                        this.fixture.WaitOnDeletedSecret(client, _vaultAddress, name);
 
-                        client.PurgeDeletedSecretAsync( _vaultAddress, name ).Wait( );
+                        client.PurgeDeletedSecretAsync(_vaultAddress, name).Wait();
                     }
                 }
 
@@ -810,7 +831,7 @@ namespace Microsoft.Azure.KeyVault.Tests
                 var client = GetKeyVaultClient();
 
                 // settings may not be loaded until the client is fully initialized
-                if ( !_softDeleteEnabled ) return;
+                if (!_softDeleteEnabled) return;
 
                 bool recoveryLevelIsConsistent = true;
                 var keyName = "GetDeletedKeyTest";
@@ -853,7 +874,7 @@ namespace Microsoft.Azure.KeyVault.Tests
                 var client = GetKeyVaultClient();
 
                 // settings may not be loaded until the client is fully initialized
-                if ( !_softDeleteEnabled ) return;
+                if (!_softDeleteEnabled) return;
 
                 bool recoveryLevelIsConsistent = true;
                 var keyName = "CreateDeleteRecoverPurgeTest";
@@ -952,7 +973,7 @@ namespace Microsoft.Azure.KeyVault.Tests
                 var client = GetKeyVaultClient();
 
                 // settings may not be loaded until the client is fully initialized
-                if ( !_softDeleteEnabled ) return;
+                if (!_softDeleteEnabled) return;
 
                 string keyNamePrefix = "listdeletedkeytest";
                 int numKeys = 3;
@@ -1022,7 +1043,9 @@ namespace Microsoft.Azure.KeyVault.Tests
                     nextLink = listNextResponse.NextPageLink;
                 }
 
-                foreach(string recoveryId in removedObjects)
+                Assert.True(addedObjects.Count == 0);
+
+                foreach (string recoveryId in removedObjects)
                 {
                     client.PurgeDeletedKeyAsync(recoveryId).Wait();
                 }
@@ -1387,7 +1410,7 @@ namespace Microsoft.Azure.KeyVault.Tests
                 var client = GetKeyVaultClient();
 
                 // settings may not be loaded until the client is fully initialized
-                if ( !_softDeleteEnabled ) return;
+                if (!_softDeleteEnabled) return;
 
                 var secretName = "GetDeletedSecretTest";
                 var secretValue = "mysecretvalue";
@@ -1430,7 +1453,7 @@ namespace Microsoft.Azure.KeyVault.Tests
                 var client = GetKeyVaultClient();
 
                 // settings may not be loaded until the client is fully initialized
-                if ( !_softDeleteEnabled ) return;
+                if (!_softDeleteEnabled) return;
 
                 string secretName = "SecretCreateDeleteRecoverPurgeTest";
                 string originalSecretValue = "mysecretvalue";
@@ -1507,7 +1530,7 @@ namespace Microsoft.Azure.KeyVault.Tests
 
                     // Purge the secret
                     client.PurgeDeletedSecretAsync(deletedSecret.RecoveryId).GetAwaiter().GetResult();
-                    
+
                     //verify the secret is purged
                     try
                     {
@@ -1532,7 +1555,7 @@ namespace Microsoft.Azure.KeyVault.Tests
                 var client = GetKeyVaultClient();
 
                 // settings may not be loaded until the client is fully initialized
-                if ( !_softDeleteEnabled ) return;
+                if (!_softDeleteEnabled) return;
 
                 int numSecrets = 3;
                 int maxResults = 1;
@@ -2332,7 +2355,7 @@ namespace Microsoft.Azure.KeyVault.Tests
 
                 var createdIssuer01 = client.SetCertificateIssuerAsync(_vaultAddress, issuer01Name, issuer01.Provider).GetAwaiter().GetResult();
                 Assert.NotNull(createdIssuer01);
-                
+
                 const string certificateName = "testIssuerCert01";
                 const string certificateMimeType = "application/x-pkcs12";
                 const string certificateSubjectName = "CN=*.microsoft.com";
@@ -2463,7 +2486,7 @@ namespace Microsoft.Azure.KeyVault.Tests
                 try
                 {
                     Assert.NotNull(certificateOperation);
-                    var cancelledCertificateOperation = client.UpdateCertificateOperationAsync(_vaultAddress, certificateName, cancellationRequested : true).GetAwaiter().GetResult();
+                    var cancelledCertificateOperation = client.UpdateCertificateOperationAsync(_vaultAddress, certificateName, cancellationRequested: true).GetAwaiter().GetResult();
 
                     Assert.NotNull(cancelledCertificateOperation);
                     Assert.True(cancelledCertificateOperation.CancellationRequested.HasValue && cancelledCertificateOperation.CancellationRequested.Value);
@@ -2867,7 +2890,7 @@ namespace Microsoft.Azure.KeyVault.Tests
                     }
                 };
 
-                var createdIssuer01 = client.SetCertificateIssuerAsync(_vaultAddress, issuer01Name, 
+                var createdIssuer01 = client.SetCertificateIssuerAsync(_vaultAddress, issuer01Name,
                     issuer01.Provider, issuer01.Credentials, issuer01.OrganizationDetails, issuer01.Attributes).GetAwaiter().GetResult();
                 Assert.NotNull(createdIssuer01);
 
@@ -2988,14 +3011,14 @@ namespace Microsoft.Azure.KeyVault.Tests
         #region Deleted Certificate Operations
 
         [Fact]
-        public void KeyVaultGetDeletedCertificateTest( )
+        public void KeyVaultGetDeletedCertificateTest()
         {
-            using ( MockContext context = MockContext.Start( this.GetType( ).FullName ) )
+            using (MockContext context = MockContext.Start(this.GetType().FullName))
             {
                 var client = GetKeyVaultClient();
 
                 // settings may not be loaded until the client is fully initialized
-                if ( !_softDeleteEnabled ) return;
+                if (!_softDeleteEnabled) return;
 
                 // set up a cert
                 const string certificateName = "getDeletedCert";
@@ -3025,10 +3048,10 @@ namespace Microsoft.Azure.KeyVault.Tests
                     SecretProperties = secretProps
                 };
                 var createdCertificateBundle = client.ImportCertificateAsync(
-                    _vaultAddress, 
-                    certificateName, 
-                    certificateContent, 
-                    certificatePassword, 
+                    _vaultAddress,
+                    certificateName,
+                    certificateContent,
+                    certificatePassword,
                     policy).GetAwaiter().GetResult();
                 recoveryLevelIsConsistent &= VerifyDeletionRecoveryLevel(createdCertificateBundle.Attributes, _softDeleteEnabled);
 
@@ -3043,16 +3066,16 @@ namespace Microsoft.Azure.KeyVault.Tests
                     certificateAttributes: attributes).GetAwaiter().GetResult();
                 recoveryLevelIsConsistent &= VerifyDeletionRecoveryLevel(updatedCertificateBundle.Attributes, _softDeleteEnabled);
 
-                Assert.NotNull( createdCertificateBundle );
-                Assert.NotNull( createdCertificateBundle.SecretIdentifier );
-                Assert.NotNull( createdCertificateBundle.KeyIdentifier );
-                Assert.NotNull( createdCertificateBundle.X509Thumbprint );
-                Assert.NotNull( createdCertificateBundle.Policy );
-                Assert.True( 0 == string.CompareOrdinal( myCertificate.Thumbprint, ToHexString( createdCertificateBundle.X509Thumbprint ) ) );
-                Assert.NotNull( createdCertificateBundle.Cer );
+                Assert.NotNull(createdCertificateBundle);
+                Assert.NotNull(createdCertificateBundle.SecretIdentifier);
+                Assert.NotNull(createdCertificateBundle.KeyIdentifier);
+                Assert.NotNull(createdCertificateBundle.X509Thumbprint);
+                Assert.NotNull(createdCertificateBundle.Policy);
+                Assert.True(0 == string.CompareOrdinal(myCertificate.Thumbprint, ToHexString(createdCertificateBundle.X509Thumbprint)));
+                Assert.NotNull(createdCertificateBundle.Cer);
                 var publicCer = new X509Certificate2(createdCertificateBundle.Cer);
-                Assert.NotNull( publicCer );
-                Assert.False( publicCer.HasPrivateKey );
+                Assert.NotNull(publicCer);
+                Assert.False(publicCer.HasPrivateKey);
 
                 // soft-delete the cert
                 var deletedCert = client.DeleteCertificateAsync( _vaultAddress, certificateName ).ConfigureAwait( false ).GetAwaiter( ).GetResult( );
@@ -3071,10 +3094,10 @@ namespace Microsoft.Azure.KeyVault.Tests
                 }
                 finally
                 {
-                    this.fixture.WaitOnDeletedCertificate( client, _vaultAddress, certificateName );
+                    this.fixture.WaitOnDeletedCertificate(client, _vaultAddress, certificateName);
 
                     // Purge the cert
-                    client.PurgeDeletedCertificateAsync(_vaultAddress, certificateName).GetAwaiter( ).GetResult( );
+                    client.PurgeDeletedCertificateAsync(_vaultAddress, certificateName).GetAwaiter().GetResult();
                 }
 
                 Assert.True(recoveryLevelIsConsistent, "The 'recoveryLevel' attribute did not consistently return the expected value.");
@@ -3082,14 +3105,14 @@ namespace Microsoft.Azure.KeyVault.Tests
         }
 
         [Fact]
-        public void KeyVaultCertificateCreateDeleteRecoverPurgeTest( )
+        public void KeyVaultCertificateCreateDeleteRecoverPurgeTest()
         {
-            using ( MockContext context = MockContext.Start( this.GetType( ).FullName ) )
+            using (MockContext context = MockContext.Start(this.GetType().FullName))
             {
                 var client = GetKeyVaultClient();
 
                 // settings may not be loaded until the client is fully initialized
-                if ( !_softDeleteEnabled ) return;
+                if (!_softDeleteEnabled) return;
 
                 // set up a cert
                 string name = "CertCreateDeleteRecoverPurgeTest";
@@ -3122,13 +3145,13 @@ namespace Microsoft.Azure.KeyVault.Tests
                         }
                     }).GetAwaiter().GetResult();
 
-                Assert.NotNull( createdCertificateBundle );
-                Assert.NotNull( createdCertificateBundle.SecretIdentifier );
-                Assert.NotNull( createdCertificateBundle.KeyIdentifier );
-                Assert.NotNull( createdCertificateBundle.X509Thumbprint );
-                Assert.NotNull( createdCertificateBundle.Policy );
-                Assert.True( 0 == string.CompareOrdinal( myCertificate.Thumbprint, ToHexString( createdCertificateBundle.X509Thumbprint ) ) );
-                Assert.NotNull( createdCertificateBundle.Cer );
+                Assert.NotNull(createdCertificateBundle);
+                Assert.NotNull(createdCertificateBundle.SecretIdentifier);
+                Assert.NotNull(createdCertificateBundle.KeyIdentifier);
+                Assert.NotNull(createdCertificateBundle.X509Thumbprint);
+                Assert.NotNull(createdCertificateBundle.Policy);
+                Assert.True(0 == string.CompareOrdinal(myCertificate.Thumbprint, ToHexString(createdCertificateBundle.X509Thumbprint)));
+                Assert.NotNull(createdCertificateBundle.Cer);
                 var publicCer = new X509Certificate2(createdCertificateBundle.Cer);
                 Assert.NotNull( publicCer );
                 Assert.False( publicCer.HasPrivateKey );
@@ -3143,22 +3166,22 @@ namespace Microsoft.Azure.KeyVault.Tests
                     //verify the certificate is deleted
                     try
                     {
-                        client.GetCertificateAsync( _vaultAddress, name ).GetAwaiter( ).GetResult( );
+                        client.GetCertificateAsync(_vaultAddress, name).GetAwaiter().GetResult();
                     }
-                    catch ( KeyVaultErrorException ex )
+                    catch (KeyVaultErrorException ex)
                     {
-                        if ( ex.Response.StatusCode != HttpStatusCode.NotFound || ex.Body.Error.Message != ex.Message )
+                        if (ex.Response.StatusCode != HttpStatusCode.NotFound || ex.Body.Error.Message != ex.Message)
                             throw ex;
                     }
 
-                    this.fixture.WaitOnDeletedCertificate( client, _vaultAddress, name );
+                    this.fixture.WaitOnDeletedCertificate(client, _vaultAddress, name);
 
                     // Recover the certificate
                     var recoveredCert = client.RecoverDeletedCertificateAsync(deletedCert.RecoveryId).GetAwaiter().GetResult();
                     Assert.Equal( name, recoveredCert.SecretIdentifier.Name );
                     recoveryLevelIsConsistent &= VerifyDeletionRecoveryLevel(recoveredCert.Attributes, _softDeleteEnabled);
 
-                    this.fixture.WaitOnCertificate( client, _vaultAddress, name );
+                    this.fixture.WaitOnCertificate(client, _vaultAddress, name);
 
                     // Read the recovered certificate using full identifier
                     var recoveredReadCert = client.GetCertificateAsync(recoveredCert.Id).GetAwaiter().GetResult();
@@ -3172,7 +3195,7 @@ namespace Microsoft.Azure.KeyVault.Tests
                 }
                 finally
                 {
-                    this.fixture.WaitOnCertificate( client, _vaultAddress, name );
+                    this.fixture.WaitOnCertificate(client, _vaultAddress, name);
 
                     // Delete the certificate
                     var deletedCert = client.DeleteCertificateAsync(_vaultAddress, name).GetAwaiter().GetResult();
@@ -3180,27 +3203,27 @@ namespace Microsoft.Azure.KeyVault.Tests
                     //verify the certificate is deleted
                     try
                     {
-                        client.GetCertificateAsync( _vaultAddress, name ).GetAwaiter( ).GetResult( );
+                        client.GetCertificateAsync(_vaultAddress, name).GetAwaiter().GetResult();
                     }
-                    catch ( KeyVaultErrorException ex )
+                    catch (KeyVaultErrorException ex)
                     {
-                        if ( ex.Response.StatusCode != HttpStatusCode.NotFound || ex.Body.Error.Message != ex.Message )
+                        if (ex.Response.StatusCode != HttpStatusCode.NotFound || ex.Body.Error.Message != ex.Message)
                             throw ex;
                     }
 
-                    this.fixture.WaitOnDeletedCertificate( client, _vaultAddress, name );
+                    this.fixture.WaitOnDeletedCertificate(client, _vaultAddress, name);
 
                     // Purge the certificate
-                    client.PurgeDeletedCertificateAsync( _vaultAddress, name ).GetAwaiter( ).GetResult( );
+                    client.PurgeDeletedCertificateAsync(_vaultAddress, name).GetAwaiter().GetResult();
 
                     //verify the certificate is purged
                     try
                     {
-                        deletedCert = client.GetDeletedCertificateAsync( _vaultAddress, name ).GetAwaiter( ).GetResult( );
+                        deletedCert = client.GetDeletedCertificateAsync(_vaultAddress, name).GetAwaiter().GetResult();
                     }
-                    catch ( KeyVaultErrorException ex )
+                    catch (KeyVaultErrorException ex)
                     {
-                        if ( ex.Response.StatusCode != HttpStatusCode.NotFound || ex.Body.Error.Message != ex.Message )
+                        if (ex.Response.StatusCode != HttpStatusCode.NotFound || ex.Body.Error.Message != ex.Message)
                             throw ex;
                     }
                 }
@@ -3210,14 +3233,14 @@ namespace Microsoft.Azure.KeyVault.Tests
         }
 
         [Fact]
-        public void KeyVaultListDeletedCertificatesTest( )
+        public void KeyVaultListDeletedCertificatesTest()
         {
-            using ( MockContext context = MockContext.Start( this.GetType( ).FullName ) )
+            using (MockContext context = MockContext.Start(this.GetType().FullName))
             {
                 var client = GetKeyVaultClient();
 
                 // settings may not be loaded until the client is fully initialized
-                if ( !_softDeleteEnabled ) return;
+                if (!_softDeleteEnabled) return;
 
                 int numCerts = 3;
                 int maxResults = 1;
@@ -3322,6 +3345,393 @@ namespace Microsoft.Azure.KeyVault.Tests
                 }
 
                 Assert.True(recoveryLevelIsConsistent, "the 'recoveryLevel' attribute did not consistently return the expected value.");
+            }
+        }
+
+        #endregion
+
+        #region Storage Operations
+
+        [Fact]
+        public void KeyVaultStorageCreateTest()
+        {
+            using (MockContext.Start(this.GetType().FullName))
+            {
+                var client = GetKeyVaultUserClient();
+
+                const string storageAccountName = "createStrg01";
+                try
+                {
+                    CreateKvStorageAccount(client, storageAccountName);
+                }
+                finally
+                {
+                    // Delete
+                    var storageBundleDeleted =
+                        client.DeleteStorageAccountAsync(_vaultAddress, storageAccountName).GetAwaiter().GetResult();
+
+                    Assert.NotNull(storageBundleDeleted);
+                }
+            }
+        }
+
+        [Fact]
+        public void KeyVaultStorageReadTest()
+        {
+            using (MockContext.Start(this.GetType().FullName))
+            {
+                var client = GetKeyVaultUserClient();
+
+                const string storageAccountName = "readStrg01";
+                try
+                {
+                    CreateKvStorageAccount(client, storageAccountName);
+
+                    var storageBundle = client
+                        .GetStorageAccountAsync(_vaultAddress, storageAccountName).GetAwaiter().GetResult();
+
+                    Assert.NotNull(storageBundle);
+                    Assert.NotNull(storageBundle.Id);
+                    Assert.NotNull(storageBundle.ActiveKeyName);
+                    Assert.NotNull(storageBundle.AutoRegenerateKey);
+                    Assert.NotNull(storageBundle.RegenerationPeriod);
+                    Assert.Null(storageBundle.Tags);
+                    Assert.True(storageBundle.Attributes.Enabled);
+                }
+                finally
+                {
+                    // Delete
+                    var storageBundleDeleted =
+                        client.DeleteStorageAccountAsync(_vaultAddress, storageAccountName).GetAwaiter().GetResult();
+
+                    Assert.NotNull(storageBundleDeleted);
+                }
+            }
+        }
+
+        [Fact]
+        public void KeyVaultStorageDeleteTest()
+        {
+            using (MockContext.Start(this.GetType().FullName))
+            {
+                var client = GetKeyVaultUserClient();
+
+                const string storageAccountName = "deleteStrg01";
+
+                CreateKvStorageAccount(client, storageAccountName);
+
+                var storageBundle = client
+                    .DeleteStorageAccountAsync(_vaultAddress, storageAccountName).GetAwaiter().GetResult();
+
+                Assert.NotNull(storageBundle);
+                Assert.NotNull(storageBundle.Id);
+                Assert.NotNull(storageBundle.ActiveKeyName);
+                Assert.NotNull(storageBundle.AutoRegenerateKey);
+                Assert.NotNull(storageBundle.RegenerationPeriod);
+                Assert.Null(storageBundle.Tags);
+                Assert.True(storageBundle.Attributes.Enabled);
+            }
+        }
+
+        [Fact]
+        public void KeyVaultStorageUpdateTest()
+        {
+            using (MockContext.Start(this.GetType().FullName))
+            {
+                var client = GetKeyVaultUserClient();
+
+                const string storageAccountName = "updateStrg01";
+                try
+                {
+                    CreateKvStorageAccount(client, storageAccountName);
+
+                    var storageBundle = client
+                        .UpdateStorageAccountAsync(_vaultAddress, storageAccountName, "key2", false, "P10D")
+                        .GetAwaiter()
+                        .GetResult();
+
+                    Assert.NotNull(storageBundle);
+                    Assert.NotNull(storageBundle.Id);
+                    Assert.NotEqual("key1", storageBundle.ActiveKeyName);
+                    Assert.False(storageBundle.AutoRegenerateKey);
+                    Assert.Equal("P10D", storageBundle.RegenerationPeriod);
+                    Assert.Null(storageBundle.Tags);
+                    Assert.True(storageBundle.Attributes.Enabled);
+                }
+                finally
+                {
+                    // Delete
+                    var storageBundleDeleted =
+                        client.DeleteStorageAccountAsync(_vaultAddress, storageAccountName).GetAwaiter().GetResult();
+
+                    Assert.NotNull(storageBundleDeleted);
+                }
+            }
+        }
+
+        [Fact]
+        public void KeyVaultStorageListTest()
+        {
+            using (MockContext.Start(this.GetType().FullName))
+            {
+                var client = GetKeyVaultUserClient();
+                var addedObjects = new HashSet<string>();
+
+                const string storageAccountName1 = "listStrg01";
+                const string storageAccountName2 = "listStrg02";
+                try
+                {
+                    var bundle01 = CreateKvStorageAccount(client, storageAccountName1);
+                    addedObjects.Add(bundle01.Id);
+                    var bundle02 = CreateKvStorageAccount(client, storageAccountName2, _storageResourceUrl2);
+                    addedObjects.Add(bundle02.Id);
+
+                    var listResponse = client
+                        .GetStorageAccountsAsync(_vaultAddress)
+                        .GetAwaiter()
+                        .GetResult();
+
+                    Assert.NotNull(listResponse);
+                    foreach (StorageAccountItem m in listResponse)
+                    {
+                        if (addedObjects.Contains(m.Id))
+                        {
+                            Assert.True(m.Identifier.Name.StartsWith("listStrg"));
+                            addedObjects.Remove(m.Id);
+                        }
+                    }
+                }
+                finally
+                {
+                    // Delete
+                    var storageBundleDeleted01 =
+                        client.DeleteStorageAccountAsync(_vaultAddress, storageAccountName1).GetAwaiter().GetResult();
+
+                    Assert.NotNull(storageBundleDeleted01);
+
+                    var storageBundleDeleted02 =
+                        client.DeleteStorageAccountAsync(_vaultAddress, storageAccountName2).GetAwaiter().GetResult();
+
+                    Assert.NotNull(storageBundleDeleted02);
+                }
+            }
+        }
+
+        [Fact]
+        public void KeyVaultStorageRegenerateKeyTest()
+        {
+            using (MockContext.Start(this.GetType().FullName))
+            {
+                var client = GetKeyVaultUserClient();
+
+                const string storageAccountName = "regenerateKeyStrg01";
+                try
+                {
+                    CreateKvStorageAccount(client, storageAccountName);
+
+                    var storageBundle = client
+                        .RegenerateStorageAccountKeyAsync(_vaultAddress, storageAccountName, "key2")
+                        .GetAwaiter()
+                        .GetResult();
+
+                    Assert.NotNull(storageBundle);
+                    Assert.NotNull(storageBundle.Id);
+                    Assert.Equal("key2", storageBundle.ActiveKeyName);
+                    Assert.NotNull(storageBundle.AutoRegenerateKey);
+                    Assert.NotNull(storageBundle.RegenerationPeriod);
+                    Assert.Null(storageBundle.Tags);
+                    Assert.True(storageBundle.Attributes.Enabled);
+                }
+                finally
+                {
+                    // Delete
+                    var storageBundleDeleted =
+                        client.DeleteStorageAccountAsync(_vaultAddress, storageAccountName).GetAwaiter().GetResult();
+
+                    Assert.NotNull(storageBundleDeleted);
+                }
+            }
+        }
+
+        [Fact]
+        public void KeyVaultStorageSasDefCreateTest()
+        {
+            using (MockContext.Start(this.GetType().FullName))
+            {
+                var client = GetKeyVaultUserClient();
+
+                const string storageAccountName = "createsas01"; ;
+                const string sasDefName = "createStrgSasDef01";
+
+                try
+                {
+                    CreateKvStorageSasDef(client, storageAccountName, sasDefName);
+                }
+                finally
+                {
+                    // Delete
+                    var sasDefDeleted =
+                        client.DeleteSasDefinitionAsync(_vaultAddress, storageAccountName, sasDefName).GetAwaiter().GetResult();
+
+                    Assert.NotNull(sasDefDeleted);
+                }
+            }
+        }
+
+        [Fact]
+        public void KeyVaultStorageSasDefReadTest()
+        {
+            using (MockContext.Start(this.GetType().FullName))
+            {
+                var client = GetKeyVaultUserClient();
+
+                const string storageAccountName = "readsas01";
+                const string sasDefName = "readStrgSasDef01";
+                try
+                {
+                    CreateKvStorageSasDef(client, storageAccountName, sasDefName);
+
+                    var response = client
+                        .GetSasDefinitionAsync(_vaultAddress, storageAccountName, sasDefName).GetAwaiter().GetResult();
+
+                    Assert.NotNull(response.Id);
+                    Assert.NotNull(response.SecretId);
+                    Assert.NotNull(response.Parameters);
+                    Assert.True(response.Attributes.Enabled);
+                    Assert.Null(response.Tags);
+                }
+                finally
+                {
+                    // Delete
+                    var sasDefDeleted =
+                        client.DeleteSasDefinitionAsync(_vaultAddress, storageAccountName, sasDefName).GetAwaiter().GetResult();
+
+                    Assert.NotNull(sasDefDeleted);
+                }
+            }
+        }
+
+        [Fact]
+        public void KeyVaultStorageSasDefDeleteTest()
+        {
+            using (MockContext.Start(this.GetType().FullName))
+            {
+                var client = GetKeyVaultUserClient();
+
+                const string storageAccountName = "deletesas01";
+                const string sasDefName = "deleteStrgSasDef01";
+
+                CreateKvStorageSasDef(client, storageAccountName, sasDefName);
+
+                var response = client
+                       .DeleteSasDefinitionAsync(_vaultAddress, storageAccountName, sasDefName).GetAwaiter().GetResult();
+
+                Assert.NotNull(response.Id);
+                Assert.NotNull(response.SecretId);
+                Assert.NotNull(response.Parameters);
+                Assert.True(response.Attributes.Enabled);
+                Assert.Null(response.Tags);
+            }
+        }
+
+        [Fact]
+        public void KeyVaultStorageSasDefUpdateTest()
+        {
+            using (MockContext.Start(this.GetType().FullName))
+            {
+                var client = GetKeyVaultUserClient();
+
+                const string storageAccountName = "updatesas01";
+                const string sasDefName = "updateStrgSasDef01";
+                try
+                {
+                    CreateKvStorageSasDef(client, storageAccountName, sasDefName);
+                    var updateParams = new Dictionary<string, string>
+                    {
+                        {"sasType", "account"},
+                        {"signedProtocols", "https"},
+                        {"signedServices", "tf"},
+                        {"signedResourceTypes", "myresource2"},
+                        {"signedPermissions", "r"},
+                        {"signedVersion", "2016-05-31"},
+                        {"validityPeriod", "P7D"}
+                    };
+
+                    var response = client
+                        .UpdateSasDefinitionAsync(
+                            _vaultAddress,
+                            storageAccountName,
+                            sasDefName,
+                            updateParams,
+                            new SasDefinitionAttributes(false))
+                        .GetAwaiter()
+                        .GetResult();
+
+                    Assert.NotNull(response.Id);
+                    Assert.NotNull(response.SecretId);
+                    Assert.True(response.Parameters.SequenceEqual(updateParams));
+                    Assert.False(response.Attributes.Enabled);
+                    Assert.Null(response.Tags);
+                }
+                finally
+                {
+                    // Delete
+                    var sasDefDeleted =
+                        client.DeleteSasDefinitionAsync(_vaultAddress, storageAccountName, sasDefName)
+                            .GetAwaiter()
+                            .GetResult();
+
+                    Assert.NotNull(sasDefDeleted);
+                }
+            }
+        }
+
+        [Fact]
+        public void KeyVaultStorageSasDefListTest()
+        {
+            using (MockContext.Start(this.GetType().FullName))
+            {
+                var client = GetKeyVaultUserClient();
+                var addedObjects = new HashSet<string>();
+
+                const string storageAccountName = "listsas01";
+                const string sasDefName1 = "listStrgSasDef01";
+                const string sasDefName2 = "listStrgSasDef02";
+                try
+                {
+                    var bundle01 = CreateKvStorageSasDef(client, storageAccountName, sasDefName1);
+                    addedObjects.Add(bundle01.Id);
+                    var bundle02 = CreateKvStorageSasDef(client, storageAccountName, sasDefName2);
+                    addedObjects.Add(bundle02.Id);
+
+                    var listResponse = client
+                        .GetSasDefinitionsAsync(_vaultAddress, storageAccountName)
+                        .GetAwaiter()
+                        .GetResult();
+
+                    Assert.NotNull(listResponse);
+                    foreach (SasDefinitionItem m in listResponse)
+                    {
+                        if (addedObjects.Contains(m.Id))
+                        {
+                            Assert.True(m.Identifier.Name.StartsWith("listStrgSasDef"));
+                            addedObjects.Remove(m.Id);
+                        }
+                    }
+                }
+                finally
+                {
+                    // Delete
+                    var sasDefDeleted01 =
+                        client.DeleteSasDefinitionAsync(_vaultAddress, storageAccountName, sasDefName1).GetAwaiter().GetResult();
+
+                    Assert.NotNull(sasDefDeleted01);
+
+                    var sasDefDeleted02 =
+                        client.DeleteSasDefinitionAsync(_vaultAddress, storageAccountName, sasDefName2).GetAwaiter().GetResult();
+
+                    Assert.NotNull(sasDefDeleted02);
+                }
             }
         }
 
@@ -3482,11 +3892,11 @@ namespace Microsoft.Azure.KeyVault.Tests
             Assert.Equal<bool?>(keyAttribute1.Enabled ?? true, keyAttribute2.Enabled ?? true);
         }
 
-        private void VerifySecretAttributesAreEqual( SecretAttributes leftAttributes, SecretAttributes rightAttributes )
+        private void VerifySecretAttributesAreEqual(SecretAttributes leftAttributes, SecretAttributes rightAttributes)
         {
-            Assert.Equal( leftAttributes.Expires, rightAttributes.Expires );
-            Assert.Equal( leftAttributes.NotBefore, rightAttributes.NotBefore );
-            Assert.Equal<bool?>( leftAttributes.Enabled ?? true, rightAttributes.Enabled ?? true );
+            Assert.Equal(leftAttributes.Expires, rightAttributes.Expires);
+            Assert.Equal(leftAttributes.NotBefore, rightAttributes.NotBefore);
+            Assert.Equal<bool?>(leftAttributes.Enabled ?? true, rightAttributes.Enabled ?? true);
         }
 
         private void VerifyKeyOperationsAreEqual(IList<string> firstOperations, IList<string> secondOperations)
@@ -3600,7 +4010,7 @@ namespace Microsoft.Azure.KeyVault.Tests
 
             return key;
         }
-        
+
         private CertificateBundle PollOnCertificateOperation(KeyVaultClient client, CertificateOperation pendingCertificate)
         {
             // Wait till pending is complete. We will wait for 200 seconds
@@ -3610,7 +4020,7 @@ namespace Microsoft.Azure.KeyVault.Tests
                 var pendingCertificateResponse = client.GetCertificateOperationAsync(_vaultAddress, pendingCertificate.CertificateOperationIdentifier.Name).GetAwaiter().GetResult();
                 if (0 == string.Compare(pendingCertificateResponse.Status, "InProgress", true))
                 {
-                    if(HttpMockServer.Mode == HttpRecorderMode.Record)
+                    if (HttpMockServer.Mode == HttpRecorderMode.Record)
                         Thread.Sleep(TimeSpan.FromSeconds(20));
                     pendingPollCount += 1;
                     continue;
@@ -3658,6 +4068,61 @@ namespace Microsoft.Azure.KeyVault.Tests
             public static readonly string[] AllIssuers = { Self, Unknown };
         }
 
+        private StorageBundle CreateKvStorageAccount(KeyVaultClient client, string storageAccountName)
+        {
+            return CreateKvStorageAccount(client, storageAccountName, _storageResourceUrl1);
+        }
+
+        private StorageBundle CreateKvStorageAccount(KeyVaultClient client, string storageAccountName, string storageUrl)
+        {
+            var storageBundle = client.SetStorageAccountAsync(_vaultAddress, storageAccountName, storageUrl,
+                "key1", true, "P30D", new StorageAccountAttributes(true)).GetAwaiter().GetResult();
+
+            Assert.NotNull(storageBundle);
+            Assert.NotNull(storageBundle.Id);
+            Assert.NotNull(storageBundle.ActiveKeyName);
+            Assert.NotNull(storageBundle.AutoRegenerateKey);
+            Assert.NotNull(storageBundle.RegenerationPeriod);
+            Assert.Null(storageBundle.Tags);
+            Assert.True(storageBundle.Attributes.Enabled);
+
+            return storageBundle;
+        }
+
+        private SasDefinitionBundle CreateKvStorageSasDef(
+            KeyVaultClient client,
+            string storageAccountName,
+            string sasDefName)
+        {
+            CreateKvStorageAccount(client, storageAccountName);
+            var paramsDic = new Dictionary<string, string>
+            {
+                {"sasType", "account"},
+                {"signedProtocols", "https"},
+                {"signedServices", "bq"},
+                {"signedResourceTypes", "myresource"},
+                {"signedPermissions", "rw"},
+                {"signedVersion", "2016-05-31"},
+                {"validityPeriod", "PT10H"}
+            };
+            var response = client.SetSasDefinitionAsync(
+                _vaultAddress,
+                storageAccountName,
+                sasDefName,
+                paramsDic,
+                new SasDefinitionAttributes(true))
+                .GetAwaiter()
+                .GetResult();
+
+            Assert.NotNull(response.Id);
+            Assert.NotNull(response.SecretId);
+            Assert.True(response.Parameters.SequenceEqual(paramsDic));
+            Assert.True(response.Attributes.Enabled);
+            Assert.Null(response.Tags);
+
+            return response;
+        }
+
         private class HttpClientFactory
         {
             /// <summary>
@@ -3677,7 +4142,7 @@ namespace Microsoft.Azure.KeyVault.Tests
                 {
                     // set each previous handler as the inner of the subsequent one. 
                     // Last handler becomes the first handler in the pipeline.
-                    handlers[idx].InnerHandler = handlers[idx-1];
+                    handlers[idx].InnerHandler = handlers[idx - 1];
                 }
 
                 return new HttpClient(handlers[handlers.Length - 1]);

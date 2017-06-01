@@ -1037,6 +1037,8 @@ namespace Microsoft.Azure.KeyVault
         /// Sets the specified certificate issuer.
         /// </summary>
         /// <remarks>
+        /// The SetCertificateIssuer operation adds or updates the specified
+        /// certificate issuer.
         /// </remarks>
         /// <param name='vaultBaseUrl'>
         /// The vault name, for example https://myvault.vault.azure.net.
@@ -1068,6 +1070,8 @@ namespace Microsoft.Azure.KeyVault
         /// Updates the specified certificate issuer.
         /// </summary>
         /// <remarks>
+        /// The UpdateCertificateIssuer operation performs an update on the
+        /// specified certificate issuer entity.
         /// </remarks>
         /// <param name='vaultBaseUrl'>
         /// The vault name, for example https://myvault.vault.azure.net.
@@ -1120,6 +1124,8 @@ namespace Microsoft.Azure.KeyVault
         /// Deletes the specified certificate issuer.
         /// </summary>
         /// <remarks>
+        /// The DeleteCertificateIssuer operation permanently removes the
+        /// specified certificate issuer from the vault.
         /// </remarks>
         /// <param name='vaultBaseUrl'>
         /// The vault name, for example https://myvault.vault.azure.net.
@@ -1279,6 +1285,9 @@ namespace Microsoft.Azure.KeyVault
         /// certificate.
         /// </summary>
         /// <remarks>
+        /// The UpdateCertificate operation applies the specified update on the
+        /// given certificate; note the only elements being updated are the
+        /// certificate's attributes.
         /// </remarks>
         /// <param name='vaultBaseUrl'>
         /// The vault name, for example https://myvault.vault.azure.net.
@@ -1422,6 +1431,11 @@ namespace Microsoft.Azure.KeyVault
         /// Lists the deleted certificates in the specified vault, currently
         /// available for recovery.
         /// </summary>
+        /// <remarks>
+        /// The GetDeletedCertificates operation retrieves the certificates in
+        /// the current vault which are in a deleted state and ready for
+        /// recovery or purging.
+        /// </remarks>
         /// <param name='vaultBaseUrl'>
         /// The vault name, for example https://myvault.vault.azure.net.
         /// </param>
@@ -1507,6 +1521,268 @@ namespace Microsoft.Azure.KeyVault
         /// The cancellation token.
         /// </param>
         Task<AzureOperationResponse<CertificateBundle>> RecoverDeletedCertificateWithHttpMessagesAsync(string vaultBaseUrl, string certificateName, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// List storage accounts managed by specified key vault
+        /// </summary>
+        /// <param name='vaultBaseUrl'>
+        /// The vault name, for example https://myvault.vault.azure.net.
+        /// </param>
+        /// <param name='maxresults'>
+        /// Maximum number of results to return in a page. If not specified the
+        /// service will return up to 25 results.
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<AzureOperationResponse<IPage<StorageAccountItem>>> GetStorageAccountsWithHttpMessagesAsync(string vaultBaseUrl, int? maxresults = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Deletes a storage account.
+        /// </summary>
+        /// <param name='vaultBaseUrl'>
+        /// The vault name, for example https://myvault.vault.azure.net.
+        /// </param>
+        /// <param name='storageAccountName'>
+        /// The name of the storage account.
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<AzureOperationResponse<StorageBundle>> DeleteStorageAccountWithHttpMessagesAsync(string vaultBaseUrl, string storageAccountName, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Gets information about a specified storage account.
+        /// </summary>
+        /// <param name='vaultBaseUrl'>
+        /// The vault name, for example https://myvault.vault.azure.net.
+        /// </param>
+        /// <param name='storageAccountName'>
+        /// The name of the storage account.
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<AzureOperationResponse<StorageBundle>> GetStorageAccountWithHttpMessagesAsync(string vaultBaseUrl, string storageAccountName, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Creates or updates a new storage account.
+        /// </summary>
+        /// <param name='vaultBaseUrl'>
+        /// The vault name, for example https://myvault.vault.azure.net.
+        /// </param>
+        /// <param name='storageAccountName'>
+        /// The name of the storage account.
+        /// </param>
+        /// <param name='resourceId'>
+        /// Storage account resource id.
+        /// </param>
+        /// <param name='activeKeyName'>
+        /// Current active storage account key name.
+        /// </param>
+        /// <param name='autoRegenerateKey'>
+        /// whether keyvault should manage the storage account for the user.
+        /// </param>
+        /// <param name='regenerationPeriod'>
+        /// The key regeneration time duration specified in ISO-8601 format.
+        /// </param>
+        /// <param name='storageAccountAttributes'>
+        /// The attributes of the storage account.
+        /// </param>
+        /// <param name='tags'>
+        /// Application specific metadata in the form of key-value pairs.
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<AzureOperationResponse<StorageBundle>> SetStorageAccountWithHttpMessagesAsync(string vaultBaseUrl, string storageAccountName, string resourceId, string activeKeyName, bool autoRegenerateKey, string regenerationPeriod = default(string), StorageAccountAttributes storageAccountAttributes = default(StorageAccountAttributes), IDictionary<string, string> tags = default(IDictionary<string, string>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Updates the specified attributes associated with the given storage
+        /// account.
+        /// </summary>
+        /// <param name='vaultBaseUrl'>
+        /// The vault name, for example https://myvault.vault.azure.net.
+        /// </param>
+        /// <param name='storageAccountName'>
+        /// The name of the storage account.
+        /// </param>
+        /// <param name='activeKeyName'>
+        /// The current active storage account key name.
+        /// </param>
+        /// <param name='autoRegenerateKey'>
+        /// whether keyvault should manage the storage account for the user.
+        /// </param>
+        /// <param name='regenerationPeriod'>
+        /// The key regeneration time duration specified in ISO-8601 format.
+        /// </param>
+        /// <param name='storageAccountAttributes'>
+        /// The attributes of the storage account.
+        /// </param>
+        /// <param name='tags'>
+        /// Application specific metadata in the form of key-value pairs.
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<AzureOperationResponse<StorageBundle>> UpdateStorageAccountWithHttpMessagesAsync(string vaultBaseUrl, string storageAccountName, string activeKeyName = default(string), bool? autoRegenerateKey = default(bool?), string regenerationPeriod = default(string), StorageAccountAttributes storageAccountAttributes = default(StorageAccountAttributes), IDictionary<string, string> tags = default(IDictionary<string, string>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Regenerates the specified key value for the given storage account.
+        /// </summary>
+        /// <param name='vaultBaseUrl'>
+        /// The vault name, for example https://myvault.vault.azure.net.
+        /// </param>
+        /// <param name='storageAccountName'>
+        /// The name of the storage account.
+        /// </param>
+        /// <param name='keyName'>
+        /// The storage account key name.
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<AzureOperationResponse<StorageBundle>> RegenerateStorageAccountKeyWithHttpMessagesAsync(string vaultBaseUrl, string storageAccountName, string keyName, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// List storage SAS definitions for the given storage account.
+        /// </summary>
+        /// <param name='vaultBaseUrl'>
+        /// The vault name, for example https://myvault.vault.azure.net.
+        /// </param>
+        /// <param name='storageAccountName'>
+        /// The name of the storage account.
+        /// </param>
+        /// <param name='maxresults'>
+        /// Maximum number of results to return in a page. If not specified the
+        /// service will return up to 25 results.
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<AzureOperationResponse<IPage<SasDefinitionItem>>> GetSasDefinitionsWithHttpMessagesAsync(string vaultBaseUrl, string storageAccountName, int? maxresults = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Deletes a SAS definition from a specified storage account.
+        /// </summary>
+        /// <param name='vaultBaseUrl'>
+        /// The vault name, for example https://myvault.vault.azure.net.
+        /// </param>
+        /// <param name='storageAccountName'>
+        /// The name of the storage account.
+        /// </param>
+        /// <param name='sasDefinitionName'>
+        /// The name of the SAS definition.
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<AzureOperationResponse<SasDefinitionBundle>> DeleteSasDefinitionWithHttpMessagesAsync(string vaultBaseUrl, string storageAccountName, string sasDefinitionName, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Gets information about a SAS definition for the specified storage
+        /// account.
+        /// </summary>
+        /// <param name='vaultBaseUrl'>
+        /// The vault name, for example https://myvault.vault.azure.net.
+        /// </param>
+        /// <param name='storageAccountName'>
+        /// The name of the storage account.
+        /// </param>
+        /// <param name='sasDefinitionName'>
+        /// The name of the SAS definition.
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<AzureOperationResponse<SasDefinitionBundle>> GetSasDefinitionWithHttpMessagesAsync(string vaultBaseUrl, string storageAccountName, string sasDefinitionName, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Creates or updates a new SAS definition for the specified storage
+        /// account.
+        /// </summary>
+        /// <param name='vaultBaseUrl'>
+        /// The vault name, for example https://myvault.vault.azure.net.
+        /// </param>
+        /// <param name='storageAccountName'>
+        /// The name of the storage account.
+        /// </param>
+        /// <param name='sasDefinitionName'>
+        /// The name of the SAS definition.
+        /// </param>
+        /// <param name='parameters'>
+        /// Sas definition creation metadata in the form of key-value pairs.
+        /// </param>
+        /// <param name='sasDefinitionAttributes'>
+        /// The attributes of the SAS definition.
+        /// </param>
+        /// <param name='tags'>
+        /// Application specific metadata in the form of key-value pairs.
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<AzureOperationResponse<SasDefinitionBundle>> SetSasDefinitionWithHttpMessagesAsync(string vaultBaseUrl, string storageAccountName, string sasDefinitionName, IDictionary<string, string> parameters, SasDefinitionAttributes sasDefinitionAttributes = default(SasDefinitionAttributes), IDictionary<string, string> tags = default(IDictionary<string, string>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Updates the specified attributes associated with the given SAS
+        /// definition.
+        /// </summary>
+        /// <param name='vaultBaseUrl'>
+        /// The vault name, for example https://myvault.vault.azure.net.
+        /// </param>
+        /// <param name='storageAccountName'>
+        /// The name of the storage account.
+        /// </param>
+        /// <param name='sasDefinitionName'>
+        /// The name of the SAS definition.
+        /// </param>
+        /// <param name='parameters'>
+        /// Sas definition update metadata in the form of key-value pairs.
+        /// </param>
+        /// <param name='sasDefinitionAttributes'>
+        /// The attributes of the SAS definition.
+        /// </param>
+        /// <param name='tags'>
+        /// Application specific metadata in the form of key-value pairs.
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<AzureOperationResponse<SasDefinitionBundle>> UpdateSasDefinitionWithHttpMessagesAsync(string vaultBaseUrl, string storageAccountName, string sasDefinitionName, IDictionary<string, string> parameters = default(IDictionary<string, string>), SasDefinitionAttributes sasDefinitionAttributes = default(SasDefinitionAttributes), IDictionary<string, string> tags = default(IDictionary<string, string>), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Retrieves a list of individual key versions with the same key name.
@@ -1677,6 +1953,11 @@ namespace Microsoft.Azure.KeyVault
         /// Lists the deleted certificates in the specified vault, currently
         /// available for recovery.
         /// </summary>
+        /// <remarks>
+        /// The GetDeletedCertificates operation retrieves the certificates in
+        /// the current vault which are in a deleted state and ready for
+        /// recovery or purging.
+        /// </remarks>
         /// <param name='nextPageLink'>
         /// The NextLink from the previous successful call to List operation.
         /// </param>
@@ -1687,6 +1968,34 @@ namespace Microsoft.Azure.KeyVault
         /// The cancellation token.
         /// </param>
         Task<AzureOperationResponse<IPage<DeletedCertificateItem>>> GetDeletedCertificatesNextWithHttpMessagesAsync(string nextPageLink, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// List storage accounts managed by specified key vault
+        /// </summary>
+        /// <param name='nextPageLink'>
+        /// The NextLink from the previous successful call to List operation.
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<AzureOperationResponse<IPage<StorageAccountItem>>> GetStorageAccountsNextWithHttpMessagesAsync(string nextPageLink, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// List storage SAS definitions for the given storage account.
+        /// </summary>
+        /// <param name='nextPageLink'>
+        /// The NextLink from the previous successful call to List operation.
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<AzureOperationResponse<IPage<SasDefinitionItem>>> GetSasDefinitionsNextWithHttpMessagesAsync(string nextPageLink, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
     }
 }

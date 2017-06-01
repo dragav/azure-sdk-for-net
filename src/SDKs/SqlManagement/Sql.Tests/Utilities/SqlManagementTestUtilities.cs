@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test.HttpRecorder;
 using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Microsoft.Azure.Management.ResourceManager;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +22,30 @@ namespace Sql.Tests
             get
             {
                 return "Japan East";
+            }
+        }
+
+        public static string DefaultSecondaryLocation
+        {
+            get
+            {
+                return "Central US";
+            }
+        }
+
+        public static string DefaultStagePrimaryLocation
+        {
+            get
+            {
+                return "North Europe";
+            }
+        }
+
+        public static string DefaultStageSecondaryLocation
+        {
+            get
+            {
+                return "SouthEast Asia";
             }
         }
 
@@ -234,6 +258,22 @@ namespace Sql.Tests
             Assert.NotNull(actual.Type);
         }
 
+        public static void ValidateFailoverGroup(FailoverGroup expected, FailoverGroup actual, string name)
+        {
+            Assert.NotNull(actual);
+            Assert.NotNull(actual.Id);
+            Assert.NotNull(actual.Type);
+            Assert.NotNull(actual.Location);
+
+            Assert.Equal(name, actual.Name);
+            Assert.Equal(expected.ReadOnlyEndpoint.FailoverPolicy, actual.ReadOnlyEndpoint.FailoverPolicy);
+            Assert.Equal(expected.ReadWriteEndpoint.FailoverPolicy, actual.ReadWriteEndpoint.FailoverPolicy);
+            Assert.Equal(expected.ReadWriteEndpoint.FailoverWithDataLossGracePeriodMinutes, actual.ReadWriteEndpoint.FailoverWithDataLossGracePeriodMinutes);
+
+            AssertCollection(expected.Databases, actual.Databases);
+            AssertCollection(expected.PartnerServers.Select(s => s.Id), actual.PartnerServers.Select(s => s.Id));
+        }
+
         public static void ValidateFirewallRule(FirewallRule expected, FirewallRule actual, string name)
         {
             Assert.NotNull(actual.Id);
@@ -262,13 +302,14 @@ namespace Sql.Tests
                             Tags = new Dictionary<string, string>() { { rgName, DateTime.UtcNow.ToString("u") } }
                         });
 
+
                     test(resourceClient, sqlClient, resourceGroup);
                 }
                 finally
                 {
                     if (resourceGroup != null)
                     {
-                        resourceClient.ResourceGroups.Delete(resourceGroup.Name);
+                        resourceClient.ResourceGroups.BeginDelete(resourceGroup.Name);
                     }
                 }
             }
@@ -324,6 +365,26 @@ namespace Sql.Tests
 
             // Wait for all databases to be created.
             return Task.WhenAll(createDbTasks);
+        }
+
+        internal static Server CreateServer(SqlManagementClient sqlClient, ResourceGroup resourceGroup, string serverPrefix, string location)
+        {
+            string login = "dummylogin";
+            string password = "Un53cuRE!";
+            string version12 = "12.0";
+            string serverName = SqlManagementTestUtilities.GenerateName(serverPrefix);
+            Dictionary<string, string> tags = new Dictionary<string, string>();
+
+            var v12Server = sqlClient.Servers.CreateOrUpdate(resourceGroup.Name, serverName, new Microsoft.Azure.Management.Sql.Models.Server()
+            {
+                AdministratorLogin = login,
+                AdministratorLoginPassword = password,
+                Version = version12,
+                Tags = tags,
+                Location = location,
+            });
+            SqlManagementTestUtilities.ValidateServer(v12Server, serverName, login, version12, tags, location);
+            return v12Server;
         }
     }
 }
