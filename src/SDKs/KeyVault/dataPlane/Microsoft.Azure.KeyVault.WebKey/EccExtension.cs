@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
+//using System.Security.Cryptography;
 
 namespace Microsoft.Azure.KeyVault.WebKey
 {
@@ -20,40 +20,40 @@ namespace Microsoft.Azure.KeyVault.WebKey
         /// <param name="ecdsa">The CNG object initialized with desired key</param>
         /// <param name="includePrivateParameters">Determines whether the private key part is to be exported.</param>
         /// <returns></returns>
-        public static ECParameters ExportParameters( this ECDsa ecdsa, bool includePrivateParameters )
+        public static Microsoft.Azure.KeyVault.WebKey.ECParameters ExportParameters( this System.Security.Cryptography.ECDsa ecdsa, bool includePrivateParameters )
         {
             var ecdsaCng = GetEcdsaCng( ecdsa );
             return ECParameters.FromEcdsa( ecdsaCng, includePrivateParameters );
         }
 
-        public static string[] GetKeyOperations( this ECDsa ecdsa )
+        public static string[] GetKeyOperations( this System.Security.Cryptography.ECDsa ecdsa )
         {
             var keyUsage = GetEcdsaCng( ecdsa ).Key.KeyUsage;
 
             if ( !_cngOperations.ContainsKey( keyUsage ) )
-                throw new CryptographicException( $"Unknown key usage {keyUsage}" );
+                throw new System.Security.Cryptography.CryptographicException( $"Unknown key usage {keyUsage}" );
 
             return (string[]) _cngOperations[keyUsage].Clone();
         }
 
-        private static ECDsaCng GetEcdsaCng( ECDsa ecdsa )
+        private static System.Security.Cryptography.ECDsaCng GetEcdsaCng(System.Security.Cryptography.ECDsa ecdsa )
         {
-            var ecdsaCng = ecdsa as ECDsaCng;
+            var ecdsaCng = ecdsa as System.Security.Cryptography.ECDsaCng;
             if ( ecdsaCng == null )
                 throw new NotSupportedException( $"This version requires a CNG object." );
             return ecdsaCng;
         }
 
-        private static readonly Dictionary<CngKeyUsages, string[]> _cngOperations;
+        private static readonly Dictionary<System.Security.Cryptography.CngKeyUsages, string[]> _cngOperations;
 
         static EccExtension()
         {
-            _cngOperations = new Dictionary<CngKeyUsages, string[]>
+            _cngOperations = new Dictionary<System.Security.Cryptography.CngKeyUsages, string[]>
             {
-                {CngKeyUsages.None, new string[0]},
-                {CngKeyUsages.Signing, new[] {JsonWebKeyOperation.Sign, JsonWebKeyOperation.Verify}},
-                {CngKeyUsages.Decryption, new[] {JsonWebKeyOperation.Encrypt, JsonWebKeyOperation.Decrypt, JsonWebKeyOperation.Wrap, JsonWebKeyOperation.Unwrap}},
-                {CngKeyUsages.AllUsages, JsonWebKeyOperation.AllOperations}
+                {System.Security.Cryptography.CngKeyUsages.None, new string[0]},
+                {System.Security.Cryptography.CngKeyUsages.Signing, new[] {JsonWebKeyOperation.Sign, JsonWebKeyOperation.Verify}},
+                {System.Security.Cryptography.CngKeyUsages.Decryption, new[] {JsonWebKeyOperation.Encrypt, JsonWebKeyOperation.Decrypt, JsonWebKeyOperation.Wrap, JsonWebKeyOperation.Unwrap}},
+                {System.Security.Cryptography.CngKeyUsages.AllUsages, JsonWebKeyOperation.AllOperations}
             };
         }
     }

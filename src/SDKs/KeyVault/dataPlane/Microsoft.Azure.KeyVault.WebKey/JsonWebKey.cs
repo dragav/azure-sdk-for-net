@@ -245,7 +245,7 @@ namespace Microsoft.Azure.KeyVault.WebKey
         /// <param name="includePrivateParameters">Tells if the instance must inclue private parameters.
         /// This requires the key in the ECDsa object to include private material and be marked as exportable.</param>
         public JsonWebKey( ECDsa ecsda, bool includePrivateParameters = false )
-            : this( ecsda.ExportParameters( includePrivateParameters ) )
+            : this( ecParameters: ecsda.ExportParameters( includePrivateParameters ) )
         {
             KeyOps = ecsda.GetKeyOperations();
         }
